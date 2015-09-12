@@ -13,15 +13,15 @@ import akka.actor.Terminated
 // cases:
 // 1. FindBitcoins
 // 2. Complete
-// 3. Fail
 // 3. Stop
 // 4. StopAcknowledge
+// 5. RemoteWorker
 object Worker {
 	case class FindBitcoins(startString : String, workSize : Int, leadingZeros : Int)
 	case object Complete
-	case object Failed
 	case object Stop
 	case object StopAcknowledge
+  case object RemoteWorker
 }
 
 // worker class
@@ -29,13 +29,18 @@ class Worker() extends Actor {
 	import Worker._
 
 	var w_prefix = "shashankranjan;"
-	
+	var w_type = "local"
 	def receive = {
+    case RemoteWorker =>
+      w_type = "remote"
 		case FindBitcoins(startString, workSize, leadingZeros) => FindBitcoinsImpl(startString, workSize, leadingZeros, sender)
 		case Stop =>
 			sender ! StopAcknowledge
 			context.stop(self)
-		case _ => sender ! Failed
+      if(w_type == "remote"){
+        context.system.shutdown
+      }
+		case _ => println("ERROR: WORKER - INVALID MESSAGE RECEIVED")
 	}
 
 	def FindBitcoinsImpl(startString : String, workSize : Int, leadingZeros : Int, sender : ActorRef) {
@@ -50,6 +55,7 @@ class Worker() extends Actor {
 			w_workSize -= 1
 		}
 		sender ! Complete
+
 	}
 
 	def checkZeros(hexStr: String, leadingZeros: Int) : Boolean = {
@@ -62,26 +68,11 @@ class Worker() extends Actor {
 	}
 }
 
-/*watcher class case object*/
-// cases:
-// 1. Register
-// 2. Terminated
-object  Watcher {
-
-}
-
-/*Watcher class - for remote workers*/
-class Watcher() extends Actor {
-	def receive = {
-		case _ => println("INVALID MESSAGE RECEIVED")
-	}
-}
 
 /*Master class cases object*/
 // cases:
 // 1. Start_Mining
 // 2. Complete
-// 3. Fail
 // 4. Stop
 // 5. New_Worker
 // 6. BitCoinFound
@@ -198,6 +189,7 @@ object BitcoinMining extends App {
  }
 }""")))
 				var worker = remoteSystem.actorOf(Props(new Worker()), name = "Worker")
+        worker ! Worker.RemoteWorker
 				var master = remoteSystem.actorSelection("akka.tcp://BitCoinSystem@" + ip + ":12000/user/Master")
 				master.tell(Master.New_Worker, worker)
 			}else {
