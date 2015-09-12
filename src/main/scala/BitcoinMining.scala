@@ -171,6 +171,7 @@ object BitcoinMining extends App {
 	var workSize = 1000
 	var threshold = 100000
 	var initActors = 10
+  println(args.length);
 	if(args.length != 1){
 			println("ERROR: INVALID NO. OF ARGUMENTS")
 			System.exit(1)
