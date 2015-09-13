@@ -21,6 +21,7 @@ object Master {
 	case class BitCoinFound(string: String, hex: String)
 	case object Start
 	case object New_Worker
+    case class LeadingZerosFound(zeros:Int)
 }
 
 // Master class 
@@ -34,7 +35,7 @@ class Master(leadingZeros: Int, workSize: Int, noOfActors: Int, threshold: Int) 
     var m_workSize = workSize
     var m_leadingZeros = leadingZeros
     var m_threshold = threshold
-
+    var m_maxLeadingZeros = 0
     def receive = {
     	case Start => startMining
     	case BitCoinFound(string: String, hex: String) => 
@@ -51,6 +52,7 @@ class Master(leadingZeros: Int, workSize: Int, noOfActors: Int, threshold: Int) 
     	case Worker.StopAcknowledge =>
     		m_actorsActive -= 1;
     		if(m_actorsActive == 0){
+                println("Max zeros: "+ m_maxLeadingZeros +" Total coins: "+m_minedCoins.size)
     			context.system.shutdown
     		}
 
@@ -61,6 +63,9 @@ class Master(leadingZeros: Int, workSize: Int, noOfActors: Int, threshold: Int) 
     		} else {
     			sender ! Worker.Stop
     		}
+        case LeadingZerosFound(zerosCount :Int) =>
+            if(m_maxLeadingZeros<zerosCount)
+                m_maxLeadingZeros = zerosCount;
 
     	case _ => println("INVALID MESSAGE RECEIVED")
     }

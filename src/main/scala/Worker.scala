@@ -48,9 +48,11 @@ class Worker() extends Actor {
 		var w_workSize = workSize
 		while(w_workSize > 0){
 			var hex = SHA256.hash(w_prefix + w_workString)
-			if(checkZeros(hex, leadingZeros)){
+			val zerosFound = countZeros(hex);
+			if(zerosFound>=leadingZeros){
 				sender ! Master.BitCoinFound(w_prefix + w_workString, hex)
 			}
+			sender ! Master.LeadingZerosFound(zerosFound)
 			w_workString = StringGenerator.nextString(w_workString)
 			w_workSize -= 1
 		}
@@ -58,6 +60,13 @@ class Worker() extends Actor {
 
 	}
 
+	def countZeros(hexStr : String) : Int = {
+		var i = 0
+		while(hexStr.charAt(i)=='0'){
+			i +=1
+		}
+		i
+	}
 	def checkZeros(hexStr: String, leadingZeros: Int) : Boolean = {
 		for(i <- 0 to leadingZeros - 1){	
 			if(hexStr.charAt(i) != '0'){
