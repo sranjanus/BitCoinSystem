@@ -29,13 +29,13 @@ object BitcoinMining extends App {
             remote {
               enabled-transports = ["akka.remote.netty.tcp"]
               netty.tcp {
-                port = 13000
+                port = 13400
               }
            }
           }""")))
           var worker = remoteSystem.actorOf(Props(new Worker()), name = "Worker")
           worker ! Worker.RemoteWorker
-          var master = remoteSystem.actorSelection("akka.tcp://BitCoinSystem@" + ip + ":12000/user/Master")
+          var master = remoteSystem.actorSelection("akka.tcp://BitCoinSystem@" + ip + ":12300/user/Master")
           master.tell(Master.New_Worker, worker)
 
         case ValidNumber(s) =>
@@ -45,7 +45,7 @@ object BitcoinMining extends App {
             workSize = args(2).toInt
             threshold = args(3).toInt
           }
-          val system = ActorSystem.create("BitCoinSystem", ConfigFactory.load(ConfigFactory.parseString("""{ "akka" : { "actor" : { "provider" : "akka.remote.RemoteActorRefProvider" }, "remote" : { "enabled-transports" : [ "akka.remote.netty.tcp" ], "netty" : { "tcp" : { "port" : 12000 } } } } } """)))
+          val system = ActorSystem.create("BitCoinSystem", ConfigFactory.load(ConfigFactory.parseString("""{ "akka" : { "actor" : { "provider" : "akka.remote.RemoteActorRefProvider" }, "remote" : { "enabled-transports" : [ "akka.remote.netty.tcp" ], "netty" : { "tcp" : { "port" : 12300 } } } } } """)))
           val master = system.actorOf(Props(new Master(leadingZeros, workSize, initActors, threshold)), name = "Master")
           master ! Master.Start 
 
