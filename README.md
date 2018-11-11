@@ -1,6 +1,8 @@
 # BitCoinSystem
 ##DOS Project 1
 
+A simulation of a BitCoin Mininig System using Scala.
+
  
 ###INSTALLING AND RUNNING THE PROGRAM:
 
