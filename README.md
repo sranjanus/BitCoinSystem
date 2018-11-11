@@ -1,5 +1,5 @@
 # BitCoinSystem
-##DOS Project 1
+##Distribute Operating Systems Course Project 1
 
 A simulation of a BitCoin Mininig System using Scala.
 
